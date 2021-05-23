@@ -41,7 +41,7 @@ def main(file_name, starting_value):
         print(arr)
 
         #save the collected data for training
-        if is_collect == 1:
+        if is_collect == 1 and len(arr) == 11:
             output = [steering, throttle]
             training_data.append([frame, output])
             if len(training_data) % 100 == 0:
