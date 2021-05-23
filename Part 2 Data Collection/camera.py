@@ -27,7 +27,7 @@ def main(file_name, starting_value):
     while True:
         _, frame = video.read()
 
-        frame = cv2.resize(frame, (480,270))
+        frame = cv2.resize(frame, (672,188))
 
         cv2.imshow('Video', frame)
 
