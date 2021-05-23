@@ -38,10 +38,11 @@ def main(file_name, starting_value):
         steering = arr [0]
         throttle = arr [1]
         is_collect = arr[2]
-        print(arr)
+        #print(arr)
 
         #save the collected data for training
         if is_collect == 1 and len(arr) == 11:
+            print(arr)
             output = [steering, throttle]
             training_data.append([frame, output])
             if len(training_data) % 100 == 0:
