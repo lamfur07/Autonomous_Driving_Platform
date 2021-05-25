@@ -45,16 +45,19 @@ void loop() {
     r_brake = HIGH;
   }
   w_throttle = map(r_throttle, 993, 1490, 1050, 0);
-  Serial.print(r_throttle);
+  Serial.print(w_throttle);
   dac_throttle.setVoltage(w_throttle, false);
   digitalWrite(13, r_brake);
   Serial.print("x");
-  Serial.println();
 
   // Gear
   ch5=pulseIn(4,HIGH);
-  if(ch5>1492){digitalWrite(2,HIGH);}
-  else{digitalWrite(2,LOW);}
+  if (ch5>1492){
+    digitalWrite(2,HIGH);
+  }
+  else {
+    digitalWrite(2,LOW);
+  }
   
   // LED isRecord Channel
   is_recording = pulseIn(9, HIGH, 25000);
