@@ -19,7 +19,7 @@ void setup() {
   pinMode(6, INPUT); // Throttle Channel 2 in receiver
   pinMode(9, INPUT); // Recording Channel 4 in receiver
   pinMode(13, OUTPUT); // Brake pin
-  pinMode(10, OUTPUT); // LED ON = Record; LED OFF = !Record;
+  //pinMode(10, OUTPUT); // LED ON = Record; LED OFF = !Record;
   pinMode(2, OUTPUT); // Gear pin
 
   Serial.begin(9600);
@@ -60,13 +60,13 @@ void loop() {
   }
   
   // LED isRecord Channel
-  is_recording = pulseIn(9, HIGH, 25000);
+  is_recording = pulseIn(9, HIGH);
   if (is_recording > 1400 && is_recording < 1600){
-    digitalWrite(10,HIGH);
+    //digitalWrite(10,HIGH);
     Serial.println("1");
     }
   else{
-    digitalWrite(10,LOW);
+    //digitalWrite(10,LOW);
     Serial.println("0");
     }
   delay(50);

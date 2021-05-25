@@ -20,7 +20,7 @@ while True:
 def main(file_name, starting_value):
     serial_read = serial.Serial('COM5',9600)
     serial_read.timeout = 1
-    video = cv2.VideoCapture(1)
+    video = cv2.VideoCapture(0)
 
     training_data = []
 
@@ -34,31 +34,32 @@ def main(file_name, starting_value):
         #read steering and throttle
         data = serial_read.readline().decode().strip('\r\n')
         output_data = data.split("x")
-        arr = np.asarray(output_data, dtype=np.int32)
-        steering = arr [0]
-        throttle = arr [1]
-        is_collect = arr[2]
-        #print(arr)
+        #print(len(output_data))
+        output_data_length = len(output_data)
+        if output_data_length == 3:
+            for i in range (output_data_length):
+                steering = int(output_data[0])
+                throttle = int(output_data[1])
+                is_collect = int(output_data[2])
+            print(steering,throttle,is_collect)
 
         #save the collected data for training
-        if is_collect == 1 and len(arr) == 11:
-            print(arr)
-            output = [steering, throttle]
-            training_data.append([frame, output])
-            if len(training_data) % 100 == 0:
-                print('currently at: ',len(training_data))
 
-            if len(training_data) == 1000:
-                np.save(file_name,training_data)
-                print('ALL DONE SAVED')
-                training_data = []
-                starting_value += 1
-                file_name = 'training_data-{}.npy'.format(starting_value)
+            if is_collect == 1:
+                output = [steering, throttle]
+                training_data.append([frame, output])
+                if len(training_data) % 100 == 0:
+                    print('currently at: ',len(training_data))
+
+                if len(training_data) == 200:
+                    np.save(file_name,training_data)
+                    print('ALL DONE SAVED')
+                    training_data = []
+                    starting_value += 1
+                    file_name = 'training_data-{}.npy'.format(starting_value)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
-
 
     #Shutdown camera
     video.release()
