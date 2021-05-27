@@ -7,19 +7,23 @@ Adafruit_MCP4725 dac_throttle;
 
 int r_steering; // Receiver Channel 1
 int r_throttle; // Receiver Channel 2
-int w_steering;
-int w_throttle;
-int is_recording; // Receiver Channel 4
-bool r_brake;
-bool w_brake;
+int w_steering; // Write DAC Steering
+int w_throttle; // Write DAC Throttle
+int state_channel; // Receiver Channel 4
+
+bool brake_state;
+bool gear_state = LOW;
+int camera_state = 0; // State '0' = !Record; State '1' = Record;
 int ch5;
+int throttle_max = 1050;
+float throttle_percentage;
+int updated_throttle;
 
 void setup() {
   pinMode(5, INPUT); // Steering Channel 1 in receiver
   pinMode(6, INPUT); // Throttle Channel 2 in receiver
-  pinMode(9, INPUT); // Recording Channel 4 in receiver
+  pinMode(9, INPUT); // Recording/Gear Channel 4 in receiver
   pinMode(13, OUTPUT); // Brake pin
-  //pinMode(10, OUTPUT); // LED ON = Record; LED OFF = !Record;
   pinMode(2, OUTPUT); // Gear pin
 
   Serial.begin(9600);
@@ -37,37 +41,44 @@ void loop() {
 
   // Throttle Channel
   r_throttle = pulseIn(6, HIGH);
+  ch5 = pulseIn(4, HIGH);
+  throttle_percentage = (float(ch5) - 992.0) / 991.0;
+  updated_throttle = throttle_percentage * throttle_max;
+  updated_throttle = int(updated_throttle);
+  
   if (r_throttle < THRESHOLD) {
-    r_brake = LOW;
+    brake_state = LOW;
   }
   else if (r_throttle > THRESHOLD) {
     r_throttle = 1490;
-    r_brake = HIGH;
+    brake_state = HIGH;
   }
-  w_throttle = map(r_throttle, 993, 1490, 1050, 0);
+  w_throttle = map(r_throttle, 993, 1490, updated_throttle, 0);
   Serial.print(w_throttle);
   dac_throttle.setVoltage(w_throttle, false);
-  digitalWrite(13, r_brake);
+  digitalWrite(13, brake_state);
   Serial.print("x");
 
-  // Gear
-  ch5=pulseIn(4,HIGH);
-  if (ch5>1492){
-    digitalWrite(2,HIGH);
+  // State Channel (Gear State && Camera State)
+  state_channel = pulseIn(9, HIGH);
+  if (state_channel > 980 && state_channel < 1000) {
+    gear_state = HIGH;
+    digitalWrite(2, gear_state);
+    camera_state = 0;
+    Serial.println(camera_state);
   }
-  else {
-    digitalWrite(2,LOW);
+  else if (state_channel > 1480 && state_channel < 1500) {
+    gear_state = LOW;
+    digitalWrite(2, gear_state);
+    camera_state = 0;
+    Serial.println(camera_state);
   }
-  
-  // LED isRecord Channel
-  is_recording = pulseIn(9, HIGH);
-  if (is_recording > 1400 && is_recording < 1600){
-    //digitalWrite(10,HIGH);
-    Serial.println("1");
-    }
-  else{
-    //digitalWrite(10,LOW);
-    Serial.println("0");
-    }
+  else if (state_channel > 1980 && state_channel < 2000) {
+    gear_state = LOW;
+    digitalWrite(2, gear_state);
+    camera_state = 1;
+    Serial.println(camera_state);
+  }
+
   delay(50);
 }
