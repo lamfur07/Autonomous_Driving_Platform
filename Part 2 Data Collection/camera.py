@@ -1,12 +1,24 @@
 import serial
-import time
+from time import time
 from getkeys import key_check
 import numpy as np
 import cv2
 import os
+from mss import mss
+from PIL import Image
+import matplotlib.pyplot as plt
+
+
+
+
 
 starting_value = 1
 training_data = []
+
+mon = {'top': 100, 'left':0, 'width':540, 'height':800}
+
+sct = mss()
+
 while True:
     file_name = 'training_data-{}.npy'.format(starting_value)
 
@@ -20,14 +32,21 @@ while True:
 def main(file_name, starting_value):
     serial_read = serial.Serial('COM5',9600)
     serial_read.timeout = 1
-    video = cv2.VideoCapture(0)
+    video = cv2.VideoCapture(1)
 
     training_data = []
 
     while True:
+        sct_img = sct.grab(mon)
+        #img = Image.frombytes('RGB', (sct_img.size.width, sct_img.size.height), sct_img.rgb)
+        #img_bgr = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
+
+        #img_bgr = cv2.resize(img_bgr, (220,400))
+        #cv2.imshow('test', np.array(img_bgr))
         _, frame = video.read()
 
         frame = cv2.resize(frame, (672,188))
+        frame = frame [1:188, 1:336]
 
         cv2.imshow('Video', frame)
 
@@ -47,11 +66,11 @@ def main(file_name, starting_value):
 
             if is_collect == 1:
                 output = [steering, throttle]
-                training_data.append([frame, output])
+                training_data.append([frame,output])
                 if len(training_data) % 100 == 0:
                     print('currently at: ',len(training_data))
 
-                if len(training_data) == 200:
+                if len(training_data) == 1000:
                     np.save(file_name,training_data)
                     print('ALL DONE SAVED')
                     training_data = []
