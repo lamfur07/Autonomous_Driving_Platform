@@ -23,6 +23,7 @@ void setup() {
   pinMode(5, INPUT); // Steering Channel 1 in receiver
   pinMode(6, INPUT); // Throttle Channel 2 in receiver
   pinMode(9, INPUT); // Recording/Gear Channel 4 in receiver
+  pinMode(4, INPUT); // Throttle Tuning Channel 5 in reeiver
   pinMode(13, OUTPUT); // Brake pin
   pinMode(2, OUTPUT); // Gear pin
 
