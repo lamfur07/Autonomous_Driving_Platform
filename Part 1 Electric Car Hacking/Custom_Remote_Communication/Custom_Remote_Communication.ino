@@ -5,27 +5,37 @@
 Adafruit_MCP4725 dac_steering;
 Adafruit_MCP4725 dac_throttle;
 
+// Assigned Pins on MCU
+int ch_1 = 7;
+int ch_2 = 6;
+int ch_4 = 5;
+int ch_5 = 4;
+int brake_pin = 13;
+int gear_pin = 2;
+
+// Assigned Variables
 int r_steering; // Receiver Channel 1
 int r_throttle; // Receiver Channel 2
 int w_steering; // Write DAC Steering
 int w_throttle; // Write DAC Throttle
-int state_channel; // Receiver Channel 4
 
+// Assigned Variables for Receiver Channel 4 "State '0' = !Record; State '1' = Record"
 bool brake_state;
 bool gear_state = LOW;
-int camera_state = 0; // State '0' = !Record; State '1' = Record;
-int ch5;
+int state_channel;
+int camera_state = 0;
+int throttle_tune;
 int throttle_max = 1050;
-float throttle_percentage;
 int updated_throttle;
+float throttle_percentage;
 
 void setup() {
-  pinMode(5, INPUT); // Steering Channel 1 in receiver
-  pinMode(6, INPUT); // Throttle Channel 2 in receiver
-  pinMode(9, INPUT); // Recording/Gear Channel 4 in receiver
-  pinMode(4, INPUT); // Throttle Tuning Channel 5 in reeiver
-  pinMode(13, OUTPUT); // Brake pin
-  pinMode(2, OUTPUT); // Gear pin
+  pinMode(ch_1, INPUT); // Steering Channel 1 in receiver
+  pinMode(ch_2, INPUT); // Throttle Channel 2 in receiver
+  pinMode(ch_4, INPUT); // Recording/Gear Channel 4 in receiver
+  pinMode(ch_5, INPUT); // Throttle Tuning Channel 5 in reeiver
+  pinMode(brake_pin, OUTPUT); // Brake pin
+  pinMode(gear_pin, OUTPUT); // Gear pin
 
   Serial.begin(9600);
   dac_steering.begin(0x60);
@@ -33,17 +43,17 @@ void setup() {
 }
 
 void loop() {
-  // Steering Channel
-  r_steering = pulseIn(5, HIGH);
+  // Steering Control
+  r_steering = pulseIn(ch_1, HIGH);
   w_steering = map(r_steering, 993, 1987, 1365, 2730);
   Serial.print(w_steering);
   dac_steering.setVoltage(w_steering, false);
   Serial.print("x");
 
-  // Throttle Channel
-  r_throttle = pulseIn(6, HIGH);
-  ch5 = pulseIn(4, HIGH);
-  throttle_percentage = (float(ch5) - 992.0) / 991.0;
+  // Throttle Control
+  r_throttle = pulseIn(ch_2, HIGH);
+  throttle_tune = pulseIn(ch_5, HIGH);
+  throttle_percentage = (float(throttle_tune) - 992.0) / 991.0;
   updated_throttle = throttle_percentage * throttle_max;
   updated_throttle = int(updated_throttle);
   
@@ -57,26 +67,26 @@ void loop() {
   w_throttle = map(r_throttle, 993, 1490, updated_throttle, 0);
   Serial.print(w_throttle);
   dac_throttle.setVoltage(w_throttle, false);
-  digitalWrite(13, brake_state);
+  digitalWrite(brake_pin, brake_state);
   Serial.print("x");
 
-  // State Channel (Gear State && Camera State)
-  state_channel = pulseIn(9, HIGH);
+  // State Control (Gear State && Camera State)
+  state_channel = pulseIn(ch_4, HIGH);
   if (state_channel > 980 && state_channel < 1000) {
     gear_state = HIGH;
-    digitalWrite(2, gear_state);
+    digitalWrite(gear_pin, gear_state);
     camera_state = 0;
     Serial.println(camera_state);
   }
   else if (state_channel > 1480 && state_channel < 1500) {
     gear_state = LOW;
-    digitalWrite(2, gear_state);
+    digitalWrite(gear_pin, gear_state);
     camera_state = 0;
     Serial.println(camera_state);
   }
   else if (state_channel > 1980 && state_channel < 2000) {
     gear_state = LOW;
-    digitalWrite(2, gear_state);
+    digitalWrite(gear_pin, gear_state);
     camera_state = 1;
     Serial.println(camera_state);
   }
