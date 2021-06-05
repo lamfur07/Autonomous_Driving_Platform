@@ -16,7 +16,7 @@ def map (x, in_min, in_max, out_min, out_max):
 
 
 def main():
-    serial_com = serial.Serial('COM9',9600)
+    serial_com = serial.Serial('COM5',9600)
     serial_com.timeout = 1
 
 
@@ -25,7 +25,7 @@ def main():
     prev_frame_time = 0
     new_frame_time = 0
 
-    video = cv2.VideoCapture(0)
+    video = cv2.VideoCapture(1)
     while True:
         _, frame = video.read()
 
@@ -40,7 +40,7 @@ def main():
 
         if predicted_steering < 0:
             predicted_steering = int(map(predicted_steering, -1, 0, 1375, 2047.5))
-        elif predicted_steering >0:
+        elif predicted_steering > 0:
             predicted_steering = int(map(predicted_steering, 0, 1, 2047.5, 2730))
         else:
             predicted_steering = 0
