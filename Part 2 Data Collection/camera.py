@@ -32,7 +32,7 @@ while True:
 def main(file_name, starting_value):
     serial_read = serial.Serial('COM5',9600)
     serial_read.timeout = 1
-    video = cv2.VideoCapture(1)
+    video = cv2.VideoCapture(0)
 
     training_data = []
 

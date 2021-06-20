@@ -42,17 +42,29 @@ def main():
         predicted_steering = prediction[0]
         predicted_throttle = prediction[1]
 
+        #if predicted_steering < 0:
+         #   predicted_steering = int(map(predicted_steering, -1, 0, 1365, 2047.5))
+        #elif predicted_steering > 0:
+         #   predicted_steering = int(map(predicted_steering, 0, 1, 2047.5, 2730))
+        #else:
+         #   predicted_steering = 0
+
         if predicted_steering < 0:
-            predicted_steering = int(map(predicted_steering, -1, 0, 1365, 2047.5))
+            predicted_steering = int(map(predicted_steering, -1, 0, 1365, 1665))
         elif predicted_steering > 0:
-            predicted_steering = int(map(predicted_steering, 0, 1, 2047.5, 2730))
+            predicted_steering = int(map(predicted_steering, 0, 1, 2430, 2730))
         else:
             predicted_steering = 0
 
-        predicted_avg_steering[0] = predicted_avg_steering[1]
-        predicted_avg_steering[1] = predicted_avg_steering[2]
-        predicted_avg_steering[2] = predicted_steering
 
+        #predicted_avg_steering[0] = predicted_avg_steering[1]
+        #predicted_avg_steering[1] = predicted_avg_steering[2]
+        #predicted_avg_steering[2] = predicted_steering
+
+        predicted_avg_steering[0] = predicted_steering
+        predicted_avg_steering[1] = predicted_steering
+        predicted_avg_steering[2] = predicted_steering
+            
         predicted_steering = int(sum(predicted_avg_steering)/3)
         predicted_throttle = int(map(predicted_throttle, 0, 1, 0, 1050))
 
@@ -69,8 +81,12 @@ def main():
         prev_frame_time = new_frame_time
         print('FPS: ',format(fps,'.2f'), send_data)
 
-        cv2.waitKey(5)
+        #cv2.waitKey(5)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+
+    video.release()
+    cv2.destroyAllWindows()
+          
 main()
