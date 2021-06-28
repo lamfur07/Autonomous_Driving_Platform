@@ -1,0 +1,8 @@
+pedestrians
+pedestrian sign
+speed-30 km
+speed-50 km
+stop
+traffic light - green
+traffic light - red
+vehicle
