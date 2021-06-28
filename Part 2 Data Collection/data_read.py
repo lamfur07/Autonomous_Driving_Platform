@@ -1,7 +1,7 @@
 import numpy as np
 import cv2
 
-train_data = np.load('17June2021.npy', allow_pickle=True)
+train_data = np.load('22June2021_Round1.npy', allow_pickle=True)
 
 for i in range (len(train_data)):
     img,output = train_data[i]
