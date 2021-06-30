@@ -15,11 +15,11 @@ def map (x, in_min, in_max, out_min, out_max):
 predicted_avg_steering = [2047, 2047, 0]
 
 def main():
-    # serial_com = serial.Serial('com5',9600)
-    # serial_com.timeout = 1
+    serial_com = serial.Serial('com5',9600)
+    serial_com.timeout = 1
 
 
-    model = load_model('ADP4.h5')
+    model = load_model('ADP5.h5')
 
     prev_frame_time = 0
     new_frame_time = 0
@@ -39,8 +39,9 @@ def main():
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         prediction = model.predict([frame.reshape(-1,187,335,3)])[0]
-        predicted_steering = prediction[0]
-        predicted_throttle = prediction[1]
+        predicted_steering = prediction[0][0]
+        #predicted_throttle = 1050/3
+        #predicted_throttle = prediction[1]
 
         #if predicted_steering < 0:
          #   predicted_steering = int(map(predicted_steering, -1, 0, 1365, 2047.5))
@@ -66,15 +67,16 @@ def main():
         predicted_avg_steering[2] = predicted_steering
 
         predicted_steering = int(sum(predicted_avg_steering)/3)
-        predicted_throttle = int(map(predicted_throttle, 0, 1, 0, 1050)/2)
+        predicted_throttle = int(1050*0.35)
+        #predicted_throttle = int(map(predicted_throttle, 0, 1, 0, 1050)/2)
 
         predicted_steering = str(predicted_steering).zfill(4)
         predicted_throttle = str(predicted_throttle).zfill(4)
 
         send_data = predicted_steering + predicted_throttle +'\n'
 
-        # serial_com.write(send_data.encode())
-        #time.sleep(0.1)
+        serial_com.write(send_data.encode())
+        time.sleep(0.05)
 
         new_frame_time = time.time()
         fps = 1/(new_frame_time-prev_frame_time)
