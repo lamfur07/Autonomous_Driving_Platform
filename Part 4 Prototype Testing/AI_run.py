@@ -1,4 +1,4 @@
-# import serial
+import serial
 import time
 import numpy as np
 import cv2
@@ -39,32 +39,32 @@ def main():
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         prediction = model.predict([frame.reshape(-1,187,335,3)])[0]
-        predicted_steering = prediction[0][0]
+        predicted_steering = prediction[0]
         #predicted_throttle = 1050/3
         #predicted_throttle = prediction[1]
 
-        #if predicted_steering < 0:
-         #   predicted_steering = int(map(predicted_steering, -1, 0, 1365, 2047.5))
-        #elif predicted_steering > 0:
-         #   predicted_steering = int(map(predicted_steering, 0, 1, 2047.5, 2730))
-        #else:
-         #   predicted_steering = 0
-
         if predicted_steering < 0:
-            predicted_steering = int(map(predicted_steering, -1, 0, 1365, 1665))
+           predicted_steering = int(map(predicted_steering, -1, 0, 1365, 2047.5))
         elif predicted_steering > 0:
-            predicted_steering = int(map(predicted_steering, 0, 1, 2430, 2730))
+           predicted_steering = int(map(predicted_steering, 0, 1, 2047.5, 2730))
         else:
-            predicted_steering = 0
+           predicted_steering = 0
+
+        # if predicted_steering < 0:
+        #     predicted_steering = int(map(predicted_steering, -1, 0, 1365, 1665))
+        # elif predicted_steering > 0:
+        #     predicted_steering = int(map(predicted_steering, 0, 1, 2430, 2730))
+        # else:
+        #     predicted_steering = 0
         #1665,2430
 
-        #predicted_avg_steering[0] = predicted_avg_steering[1]
-        #predicted_avg_steering[1] = predicted_avg_steering[2]
-        #predicted_avg_steering[2] = predicted_steering
-
-        predicted_avg_steering[0] = predicted_steering
-        predicted_avg_steering[1] = predicted_steering
+        predicted_avg_steering[0] = predicted_avg_steering[1]
+        predicted_avg_steering[1] = predicted_avg_steering[2]
         predicted_avg_steering[2] = predicted_steering
+
+        # predicted_avg_steering[0] = predicted_steering
+        # predicted_avg_steering[1] = predicted_steering
+        # predicted_avg_steering[2] = predicted_steering
 
         predicted_steering = int(sum(predicted_avg_steering)/3)
         predicted_throttle = int(1050*0.35)
