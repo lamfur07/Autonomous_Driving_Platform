@@ -37,10 +37,14 @@ def main():
 
     while True:
         '''Test: WEBCAM '''
-        #_, img = video_capture.read()
-        '''Test: SCREEN '''
-        img = grab_screen(region=(200,80,1000,680))
+        _, img = video_capture.read()
+        img = cv2.resize(img, (672,188))
+        img = img [1:188, 1:336]
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        '''Test: SCREEN '''
+        # img = grab_screen(region=(200,80,800,480))
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         #get image shape
         frame_count +=1

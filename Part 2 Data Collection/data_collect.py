@@ -8,10 +8,6 @@ from mss import mss
 from PIL import Image
 import matplotlib.pyplot as plt
 
-
-
-
-
 starting_value = 1
 training_data = []
 
