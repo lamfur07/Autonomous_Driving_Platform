@@ -7,7 +7,8 @@ import time
 from grabscreen import grab_screen
 from tensorflow.keras.models import load_model
 
-THROTTLE_MAX = int(0.40*1050)
+THROTTLE_MAX = int(0.50*1050)
+DIRECTION_THRESHOLD = 0.3
 '''
 The following function maps the data from one range to another range
 '''
@@ -20,6 +21,7 @@ The following function predicted the steering angle using PilotNet
 '''
 # initialize the array (used to calculate the average of last three predictions)
 predicted_avg_steering = [2047, 2047, 0]
+prediction_arr = [0 ,0 ,0]
 
 def pilotnet_prediction(model, frame):
     prediction = model.predict([frame.reshape(-1,187,335,3)])[0]
@@ -38,34 +40,46 @@ def pilotnet_prediction(model, frame):
     predicted_avg_steering[1] = predicted_avg_steering[2]
     predicted_avg_steering[2] = predicted_steering
 
+
+    prediction_arr[0] = prediction_arr[1]
+    prediction_arr[1] = prediction_arr[2]
+    prediction_arr[2] = prediction
+
+    prediction = sum(prediction_arr)/3
+
     predicted_steering = int(sum(predicted_avg_steering)/3)
 
-    return predicted_steering
+    return predicted_steering, prediction
 
-def throttle_prediction(class_label, x1, y1, x2, y2):
-
-    distance = math.sqrt(math.pow(x2-x1,2) + math.pow(y2-y1,2))
-    print("distance = ", distance)
-    #throttle = THROTTLE_MAX
-
-    if class_label == 'vehicle' or class_label == 'pedestrians' or class_label == 'pedestrian sign':
-        throttle = map(distance, 400, 0, 200, THROTTLE_MAX)
-    elif class_label == 'stop' or class_label == 'traffic light - red':
+def throttle_prediction(class_label, throttle_in):
+    throttle = throttle_in
+    if class_label == 'stop' or class_label == 'traffic light - red' or class_label == 'pedestrians':
         throttle = 0
     elif class_label == 'speed-30 km':
         throttle = throttle*0.3
     elif class_label == 'speed-50 km':
         throttle = throttle*0.5
-    else:
-        throttle = THROTTLE_MAX
-
-    print('throttle = ', throttle)
-    if throttle < 0:
-        throttle = 0
-    if throttle > THROTTLE_MAX:
-        throttle = THROTTLE_MAX
 
     return throttle
+
+def getColor(class_label):
+
+    if class_label == 'stop' or class_label == 'traffic light - red':
+        color = (0,0,255) # red color
+
+    elif class_label == 'traffic light - green':
+        color = (0,255,0) # green color
+
+    elif class_label == 'pedestrain' or class_label == 'pedestrian sign':
+        color = (255,0,255) # purple color
+
+    elif class_label == 'speed-50 km' or class_label == 'speed-30 km':
+        color = (255,255,255) # white color
+    else:
+        color = (255,0,0) # blue color
+
+    return color
+
 
 def main():
     #send steering and throttle data via serial port
@@ -73,9 +87,9 @@ def main():
     serial_com.timeout = 1
 
     '''Load Modified PilotNet to predict steering'''
-    model = load_model('ADP6.h5')
+    model = load_model('ADP5.h5')
 
-    '''Load YOLO (YOLOv4-Tiny)'''
+    '''Load YOLO (YOLOv4-Tiny)'''#update this
     net = cv2.dnn.readNet("yolov4-tiny_training_last.weights", "yolov4-tiny_training.cfg")
 
     classes = []
@@ -91,8 +105,6 @@ def main():
     prev_frame_time = 0
     new_frame_time = 0
 
-    predicted_throttle_int = THROTTLE_MAX
-
 
     video = cv2.VideoCapture(0)
     while True:
@@ -104,13 +116,27 @@ def main():
         #resize the frame as per model's input
         frame = cv2.resize(frame, (672,188))
         frame = frame [1:188, 1:336]
-        cv2.imshow('camera', frame)
+        frame_cpy = frame
+        #cv2.imshow('camera', frame)
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
         #get predicted steering from PilotNet
-        predicted_steering = pilotnet_prediction(model, frame)
-        #process1 = mp.Process(target=pilotnet_prediction,args=(model,frame))
+        predicted_steering, raw_prediction = pilotnet_prediction(model, frame)
 
+        if raw_prediction > -DIRECTION_THRESHOLD and raw_prediction < DIRECTION_THRESHOLD:
+            direction = 'Straight: ' + str(raw_prediction)
+        elif raw_prediction < -DIRECTION_THRESHOLD:
+            direction = 'Left: ' + str(raw_prediction)
+        elif raw_prediction > DIRECTION_THRESHOLD:
+            direction = 'Right: ' + str(raw_prediction)
+
+        image = cv2.putText(frame_cpy, direction, (10, 50), cv2.FONT_HERSHEY_SIMPLEX,
+                   1, (0, 0, 0), 2, cv2.LINE_AA)
+
+        cv2.imshow('camera', frame_cpy)
+
+
+        predicted_throttle_int = THROTTLE_MAX
         '''YOLO'''
         #_, img = video.read()
         img = frame
@@ -152,9 +178,17 @@ def main():
                 label = str(classes[class_ids[i]]) + "=" + str(round(confidences[i]*100, 2)) + "%"
                 #check predicted class, and react accordingly here (to do)
                 class_label = str(classes[class_ids[i]])
-                predicted_throttle_int = int(throttle_prediction(class_label, x, y, x+w, y+h))
-                cv2.rectangle(img, (x, y), (x + w, y + h), (255,0,0), 2)
-                cv2.putText(img, label, (x, y), font, 0.5, (255,0,0), 2)
+                predicted_throttle_int = int(throttle_prediction(class_label,predicted_throttle_int))
+                color = getColor(class_label)
+                cv2.rectangle(img, (x, y), (x + w, y + h), color, 2)
+                cv2.putText(img, label, (x, y), font, 0.5, color, 2)
+
+
+
+        if(predicted_steering<1706 or predicted_steering>2388):
+            if (predicted_throttle_int > 0.30*THROTTLE_MAX):
+                predicted_throttle_int = 0.30*THROTTLE_MAX
+
         cv2.imshow("Image", img)
 
         #Throttle value from YOLO and LIDAR (To DO)

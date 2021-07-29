@@ -67,7 +67,7 @@ def main():
         # predicted_avg_steering[2] = predicted_steering
 
         predicted_steering = int(sum(predicted_avg_steering)/3)
-        predicted_throttle = int(1050*0.35)
+        predicted_throttle = int(1050*0.6)
         #predicted_throttle = int(map(predicted_throttle, 0, 1, 0, 1050)/2)
 
         predicted_steering = str(predicted_steering).zfill(4)
