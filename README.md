@@ -14,11 +14,13 @@ Mohammad Uzair
 
 Syed Imad Rizvi
 
-
-
 # Demo
 
-Add gif here
+## Car's Prespective
+
+
+## Third Person Prespective
+
 
 # Project Goal
 The goal of this project is to build a self-driving vehicle (prototype), using computer vision and deep neural networks, to navigate in various environments. To achieve this goal, the project is divided into several milestones. 
