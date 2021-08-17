@@ -4,7 +4,7 @@ SFU MSE capstone project Jan 2021-Aug 2021
 Supervisor: Dr. Rad 
 
 ## Team Members
-Abduallah Tariq
+Abdullah Tariq
 
 Afnan Hassan 
 
