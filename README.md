@@ -82,8 +82,6 @@ Before testing, we needed to make sure that the remote can override the AI mode 
 
 4- Adding an LSTM (memory) model with a CNN model that would enable time-dependent predictions for our ADP system.
 
-5- Use an embedded computer such as NVIDIA Jetson to eliminate the need of having a laptop to run the neural networks. 
-
 # References
 
 “Broon F810 The Instructions Manual,” Manuals Library. [Online]. Available: https://www.manualslib.com/manual/1259961/Broon-F810.html#product-F830.
